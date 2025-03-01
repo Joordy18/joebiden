@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Site CMS</title>
+  <link rel="stylesheet" href="css/generic.css">
+  <script src="js/recipes.js"></script>
+  <script src="js/travel.js"></script>
+</head>
+<body>
+<nav>
+  <ul>
+    <li><a href="#recipes">Recettes</a></li>
+    <li><a href="#travel">Voyage</a></li>
+  </ul>
+
+</nav>
+<div id="message-container" style="position: fixed; bottom: 10px; left: 10px; z-index: 1000;"></div>
+<div id="content">
+  <section id="recipes">
+    <h1>Recettes</h1>
+    <button id="toggle-edit-mode">Mode Édition</button>
+    <input type="text" id="search" placeholder="Rechercher des recettes...">
+    <select id="sort-recipes">
+      <option value="title-asc">Titre (A-Z)</option>
+      <option value="title-desc">Titre (Z-A)</option>
+    </select>
+    <select id="filter-category">
+      <option value="">Toutes les catégories</option>
+      <option value="entree">Entrée</option>
+      <option value="plat">Plat</option>
+      <option value="dessert">Dessert</option>
+    </select>
+    <ul id="recipe-list">
+      <!-- Liste des recettes -->
+    </ul>
+    <form id="add-recipe-form">
+      <input type="text" id="new-recipe" placeholder="Nouvelle recette...">
+      <select id="new-recipe-category">
+        <option value="entree">Entrée</option>
+        <option value="plat">Plat</option>
+        <option value="dessert">Dessert</option>
+      </select>
+      <input type="file" id="new-recipe-image" accept="image/*">
+      <button type="submit">Ajouter</button>
+    </form>
+  </section>
+
+  <div id="edit-recipe-modal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h2>Modifier la recette</h2>
+      <form id="edit-recipe-form">
+        <input type="text" id="edit-recipe-title" placeholder="Titre de la recette">
+        <textarea id="edit-recipe-content" placeholder="Contenu de la recette"></textarea>
+        <select id="edit-recipe-category">
+          <option value="entree">Entrée</option>
+          <option value="plat">Plat</option>
+          <option value="dessert">Dessert</option>
+        </select>
+        <input type="file" id="edit-recipe-image" accept="image/*">
+        <img id="edit-recipe-image-preview" src="" alt="Recipe Image" style="max-width: 100%; display: none;">
+        <button type="submit">Enregistrer</button>
+        <button type="button" id="delete-recipe">Supprimer</button>
+      </form>
+    </div>
+  </div>
+  <section id="travel">
+    <h1>Voyage</h1>
+    <button id="toggle-edit-mode-album" class="edit-mode-button">Mode Édition</button>
+    <form id="add-album-form">
+      <input type="text" id="new-album" placeholder="Nouvel album...">
+      <button type="submit">Ajouter</button>
+    </form>
+    <ul id="album-list">
+      <!-- Liste des albums -->
+    </ul>
+    <div id="album-content" style="display: none;">
+      <h2 id="album-title"></h2>
+      <input type="file" id="add-photo" accept="image/*">
+      <button id="add-photo-button">Ajouter Photo</button>
+      <textarea id="album-notes" placeholder="Ajouter des notes..."></textarea>
+      <button id="save-notes-button">Enregistrer Notes</button>
+      <div id="gallery"></div>
+    </div>
+  </section>
+</div>
+<div id="pagination-controls">
+  <button id="prev-page">Précédent</button>
+  <span id="page-info"></span>
+  <button id="next-page">Suivant</button>
+</div>
+</body>
+</html>
