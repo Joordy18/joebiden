@@ -490,3 +490,23 @@ button:hover {
     margin-top: 20px;
 }
 
+.photo-container {
+    position: relative;
+    display: inline-block;
+}
+
+.photo-description {
+    display: none;
+    position: absolute;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    width: 100%;
+    text-align: center;
+    padding: 5px;
+    box-sizing: border-box;
+}
+
+.photo-container:hover .photo-description {
+    display: block;
+}

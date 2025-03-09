@@ -13,7 +13,6 @@
     <li><a href="#recipes">Recettes</a></li>
     <li><a href="#travel">Voyage</a></li>
   </ul>
-
 </nav>
 <div id="message-container" style="position: fixed; bottom: 10px; left: 10px; z-index: 1000;"></div>
 <div id="content">
@@ -65,6 +64,7 @@
       </form>
     </div>
   </div>
+
   <section id="travel">
     <h1>Voyage</h1>
     <button id="toggle-edit-mode-album" class="edit-mode-button">Mode Édition</button>
@@ -84,6 +84,22 @@
       <div id="gallery"></div>
     </div>
   </section>
+
+  <div id="edit-album-modal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h2>Modifier l'album</h2>
+      <form id="edit-album-form">
+        <input type="text" id="edit-album-title" placeholder="Titre de l'album">
+        <textarea id="edit-album-notes" placeholder="Notes de l'album"></textarea>
+        <input type="file" id="edit-album-photos" accept="image/*" multiple>
+        <button type="button" id="add-photos-button">Ajouter Photos</button>
+        <ul id="edit-album-photos-list"></ul>
+        <button type="submit">Enregistrer</button>
+        <button type="button" id="delete-album">Supprimer</button>
+      </form>
+    </div>
+  </div>
 </div>
 <div id="pagination-controls">
   <button id="prev-page">Précédent</button>

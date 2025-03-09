@@ -13,6 +13,15 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentAlbumIndex = null;
     let editMode = false;
 
+    const editAlbumModal = document.getElementById('edit-album-modal');
+    const closeAlbumModal = document.getElementsByClassName('close')[1];
+    const editAlbumForm = document.getElementById('edit-album-form');
+    const deleteAlbumButton = document.getElementById('delete-album');
+    const editAlbumTitle = document.getElementById('edit-album-title');
+    const editAlbumNotes = document.getElementById('edit-album-notes');
+    const editAlbumPhotos = document.getElementById('edit-album-photos');
+    const editAlbumPhotosList = document.getElementById('edit-album-photos-list');
+
     function renderAlbums() {
         albumList.innerHTML = '';
         albums.forEach((album, index) => {
@@ -20,9 +29,9 @@ document.addEventListener('DOMContentLoaded', function() {
             li.textContent = album.title;
             li.addEventListener('click', () => {
                 if (editMode) {
-                    openAlbum(index);
+                    openAlbumModal(index);
                 } else {
-                    renderAlbumPage(album);
+                    openAlbum(index);
                 }
             });
             albumList.appendChild(li);
@@ -32,48 +41,127 @@ document.addEventListener('DOMContentLoaded', function() {
     function openAlbum(index) {
         currentAlbumIndex = index;
         const album = albums[index];
-        albumTitle.textContent = album.title;
-        albumNotes.value = album.notes || '';
-        gallery.innerHTML = '';
-        album.photos.forEach((photo, photoIndex) => {
-            const imgContainer = document.createElement('div');
-            imgContainer.style.position = 'relative';
-            imgContainer.style.display = 'inline-block';
-            imgContainer.style.margin = '10px';
-
-            const img = document.createElement('img');
-            img.src = photo;
-            img.style.maxWidth = '100px';
-            imgContainer.appendChild(img);
-
-            if (editMode) {
-                const deleteButton = document.createElement('button');
-                deleteButton.textContent = 'Delete';
-                deleteButton.style.position = 'absolute';
-                deleteButton.style.top = '5px';
-                deleteButton.style.right = '5px';
-                deleteButton.style.backgroundColor = 'red';
-                deleteButton.style.color = 'white';
-                deleteButton.style.border = 'none';
-                deleteButton.style.borderRadius = '4px';
-                deleteButton.style.cursor = 'pointer';
-                deleteButton.addEventListener('click', () => deletePhoto(photoIndex));
-                imgContainer.appendChild(deleteButton);
-            }
-
-            gallery.appendChild(imgContainer);
-        });
-        albumContent.style.display = 'block';
+        renderAlbumPage(album);
     }
+
+    function openAlbumModal(index) {
+        currentAlbumIndex = index;
+        const album = albums[index];
+        editAlbumTitle.value = album.title;
+        editAlbumNotes.value = album.notes || '';
+        editAlbumPhotosList.innerHTML = '';
+        album.photos.forEach((photo, photoIndex) => {
+            const li = document.createElement('li');
+            const img = document.createElement('img');
+            img.src = photo.url;
+            img.style.maxWidth = '100px';
+            li.appendChild(img);
+
+            const descriptionInput = document.createElement('input');
+            descriptionInput.type = 'text';
+            descriptionInput.value = photo.description;
+            descriptionInput.placeholder = 'Description';
+            descriptionInput.addEventListener('input', (event) => {
+                photo.description = event.target.value;
+                localStorage.setItem('albums', JSON.stringify(albums));
+            });
+            li.appendChild(descriptionInput);
+
+            const upButton = document.createElement('button');
+            upButton.textContent = 'Up';
+            upButton.addEventListener('click', () => movePhoto(photoIndex, -1));
+            li.appendChild(upButton);
+
+            const downButton = document.createElement('button');
+            downButton.textContent = 'Down';
+            downButton.addEventListener('click', () => movePhoto(photoIndex, 1));
+            li.appendChild(downButton);
+
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = 'Delete';
+            deleteButton.addEventListener('click', () => deletePhoto(photoIndex));
+            li.appendChild(deleteButton);
+
+            editAlbumPhotosList.appendChild(li);
+        });
+        editAlbumModal.style.display = 'block';
+    }
+
+    closeAlbumModal.onclick = function() {
+        editAlbumModal.style.display = 'none';
+    }
+
+    window.onclick = function(event) {
+        if (event.target == editAlbumModal) {
+            editAlbumModal.style.display = 'none';
+        }
+    }
+
+    editAlbumForm.addEventListener('submit', function(event) {
+        event.preventDefault();
+        if (currentAlbumIndex !== null) {
+            albums[currentAlbumIndex].title = editAlbumTitle.value;
+            albums[currentAlbumIndex].notes = editAlbumNotes.value;
+            const files = editAlbumPhotos.files;
+            if (files.length > 0) {
+                const readers = [];
+                for (let i = 0; i < files.length; i++) {
+                    const reader = new FileReader();
+                    readers.push(reader);
+                    reader.onload = function(e) {
+                        if (!albums[currentAlbumIndex].photos.some(photo => photo.url === e.target.result)) {
+                            albums[currentAlbumIndex].photos.push({ url: e.target.result, description: '' });
+                        }
+                        if (readers.every(r => r.readyState === 2)) {
+                            localStorage.setItem('albums', JSON.stringify(albums));
+                            renderAlbums();
+                            editAlbumModal.style.display = 'none';
+                            showMessage('Album modifié avec succès.', 'success');
+                        }
+                    };
+                    reader.readAsDataURL(files[i]);
+                }
+            } else {
+                localStorage.setItem('albums', JSON.stringify(albums));
+                renderAlbums();
+                editAlbumModal.style.display = 'none';
+                showMessage('Album modifié avec succès.', 'success');
+            }
+        }
+    });
+
+    deleteAlbumButton.addEventListener('click', function() {
+        if (currentAlbumIndex !== null) {
+            albums.splice(currentAlbumIndex, 1);
+            localStorage.setItem('albums', JSON.stringify(albums));
+            renderAlbums();
+            editAlbumModal.style.display = 'none';
+            showMessage('Album supprimé avec succès.', 'success');
+        }
+    });
 
     function deletePhoto(photoIndex) {
         if (currentAlbumIndex !== null) {
             albums[currentAlbumIndex].photos.splice(photoIndex, 1);
             localStorage.setItem('albums', JSON.stringify(albums));
-            openAlbum(currentAlbumIndex);
+            openAlbumModal(currentAlbumIndex);
             showMessage('Photo supprimée avec succès.', 'success');
         } else {
-            showMessage('Aucune photo à supprimer.', 'success');
+            showMessage('Aucune photo à supprimer.', 'error');
+        }
+    }
+
+    function movePhoto(photoIndex, direction) {
+        if (currentAlbumIndex !== null) {
+            const album = albums[currentAlbumIndex];
+            const newIndex = photoIndex + direction;
+            if (newIndex >= 0 && newIndex < album.photos.length) {
+                const [movedPhoto] = album.photos.splice(photoIndex, 1);
+                album.photos.splice(newIndex, 0, movedPhoto);
+                localStorage.setItem('albums', JSON.stringify(albums));
+                openAlbumModal(currentAlbumIndex);
+                showMessage('Photo réorganisée avec succès.', 'success');
+            }
         }
     }
 
@@ -86,19 +174,11 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function formatText(text) {
-        // Apply headings (## Text = <h3>Text</h3>)
         let formattedText = text.replace(/##\s*(.*?)(\n|$)/g, "<h3>$1</h3>");
-
-        // Apply bold (**Text** = <strong>Text</strong>)
         formattedText = formattedText.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
-
-        // Convert lists (- item = <ul><li>item</li></ul>)
         formattedText = formattedText.replace(/- (.*?)(\n|$)/g, "<li>$1</li>");
         formattedText = formattedText.replace(/(<li>.*?<\/li>)+/g, "<ul>$&</ul>");
-
-        // Replace line breaks with <br> (outside of lists and headings)
         formattedText = formattedText.replace(/\n/g, "<br>");
-
         return formattedText;
     }
 
@@ -113,19 +193,39 @@ document.addEventListener('DOMContentLoaded', function() {
     <style>
         body { font-family: Arial, sans-serif; padding: 20px; }
         img { max-width: 100%; }
+        .photo-container { position: relative; display: inline-block; }
+        .photo-description {
+            display: none;
+            position: absolute;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            width: 100%;
+            text-align: center;
+            padding: 5px;
+            box-sizing: border-box;
+        }
+        .photo-container:hover .photo-description {
+            display: block;
+        }
     </style>
 </head>
 <body>
     <div class="album-page">
         <h1>${album.title}</h1>
         <div id="gallery">
-            ${album.photos.map(photo => `<img src="${photo}" alt="Album Photo">`).join('')}
+            ${album.photos.map(photo => `
+                <div class="photo-container">
+                    <img src="${photo.url}" alt="Album Photo">
+                    <div class="photo-description">${photo.description}</div>
+                </div>
+            `).join('')}
         </div>
         <p>${formattedNotes}</p>
     </div>
 </body>
 </html>
-        `);
+    `);
     }
 
     addAlbumForm.addEventListener('submit', function(event) {
@@ -147,12 +247,16 @@ document.addEventListener('DOMContentLoaded', function() {
         if (file && currentAlbumIndex !== null) {
             const reader = new FileReader();
             reader.onload = function(e) {
-                albums[currentAlbumIndex].photos.push(e.target.result);
-                localStorage.setItem('albums', JSON.stringify(albums));
-                openAlbum(currentAlbumIndex);
+                if (!albums[currentAlbumIndex].photos.some(photo => photo.url === e.target.result)) {
+                    albums[currentAlbumIndex].photos.push({ url: e.target.result, description: '' });
+                    localStorage.setItem('albums', JSON.stringify(albums));
+                    openAlbumModal(currentAlbumIndex);
+                    showMessage('Photo ajoutée avec succès.', 'success');
+                } else {
+                    showMessage('Cette photo existe déjà dans l\'album.', 'error');
+                }
             };
             reader.readAsDataURL(file);
-            showMessage('Photo ajoutée avec succès.', 'success');
         } else {
             showMessage('Veuillez sélectionner une ou des photos.', 'error');
         }
@@ -171,6 +275,31 @@ document.addEventListener('DOMContentLoaded', function() {
         updateInterface();
     });
 
+    const addPhotosButton = document.getElementById('add-photos-button');
+
+    addPhotosButton.addEventListener('click', function() {
+        const files = editAlbumPhotos.files;
+        if (files.length > 0 && currentAlbumIndex !== null) {
+            const readers = [];
+            for (let i = 0; i < files.length; i++) {
+                const reader = new FileReader();
+                readers.push(reader);
+                reader.onload = function(e) {
+                    if (!albums[currentAlbumIndex].photos.some(photo => photo.url === e.target.result)) {
+                        albums[currentAlbumIndex].photos.push({ url: e.target.result, description: '' });
+                    }
+                    if (readers.every(r => r.readyState === 2)) {
+                        localStorage.setItem('albums', JSON.stringify(albums));
+                        openAlbumModal(currentAlbumIndex);
+                        showMessage('Photos ajoutées avec succès.', 'success');
+                    }
+                };
+                reader.readAsDataURL(files[i]);
+            }
+        } else {
+            showMessage('Veuillez sélectionner une ou des photos.', 'error');
+        }
+    });
 
     function showMessage(message, type) {
         const messageContainer = document.getElementById('message-container');
